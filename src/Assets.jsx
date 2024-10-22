@@ -5,7 +5,7 @@ import { createContext, useState } from 'react';
 export const EditModeContext = createContext(null);
 export default function Assets() {
   const columns = ['Id', 'Asset Name', 'Owner Name', 'Is Crown Jewel'];
-  const [savedEdits, setSavedEdits] = useState(JSON.parse(localStorage.getItem("savedEdits") || '{}'));
+  const [savedEdits, setPersistedEdits] = useState(JSON.parse(localStorage.getItem("savedEdits") || '{}'));
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentEdits, setCurrentEdits] = useState({});
 
@@ -15,7 +15,7 @@ export default function Assets() {
       id: asset._id || 'N/A',
       name: asset.assetName || 'N/A',
       owner: asset.owner.name || asset.owner.owner.name || 'N/A',
-      isCrownJewel: hasCrownJewelChanges ? savedEdits[asset._id] : asset.enriched.isCrownJewel,
+      isCrownJewel: hasCrownJewelChanges ? savedEdits[asset._id] : !!asset.enriched.isCrownJewel,
       isCrownJewelJSON: asset.enriched.isCrownJewel,
     }
   });
@@ -33,7 +33,7 @@ export default function Assets() {
 
   function toggleIsEditMode() {
     if (isEditMode) {
-      setSavedEdits(saved => {
+      setPersistedEdits(saved => {
         for (const [id, details] of Object.entries(currentEdits)) {
           if (details.isCrownJewelJSON === details.value) {
             delete saved[id];
