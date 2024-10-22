@@ -6,8 +6,8 @@ export const EditModeContext = createContext(null);
 export default function Assets() {
   const columns = ['Id', 'Asset Name', 'Owner Name', 'Is Crown Jewel'];
   const [savedEdits, setSavedEdits] = useState(JSON.parse(localStorage.getItem("savedEdits") || '{}'));
-  const [isEditMode, changeIsEditMode] = useState(false);
-  const [currentEdits, changeCurrentEdits] = useState({});
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentEdits, setCurrentEdits] = useState({});
 
   const assets = raw_assets.map(asset => {
     const hasCrownJewelChanges = savedEdits[asset._id] !== undefined;
@@ -16,16 +16,16 @@ export default function Assets() {
       name: asset.assetName || 'N/A',
       owner: asset.owner.name || asset.owner.owner.name || 'N/A',
       isCrownJewel: hasCrownJewelChanges ? savedEdits[asset._id] : asset.enriched.isCrownJewel,
-      originalIsCrownJewel: asset.enriched.isCrownJewel,
+      isCrownJewelJSON: asset.enriched.isCrownJewel,
     }
   });
 
-  function addChangeToQueue(id, value, original, originalFromJSON) {
-    changeCurrentEdits(curr => {
+  function addChangeToQueue(id, value, original, isCrownJewelJSON) {
+    setCurrentEdits(curr => {
       if (value === original) {
         delete curr[id];
       } else {
-        curr[id] = {value, originalFromJSON};
+        curr[id] = {value, isCrownJewelJSON};
       }
       return curr;
     });
@@ -35,7 +35,7 @@ export default function Assets() {
     if (isEditMode) {
       setSavedEdits(saved => {
         for (const [id, details] of Object.entries(currentEdits)) {
-          if (details.originalFromJSON === details.value) {
+          if (details.isCrownJewelJSON === details.value) {
             delete saved[id];
           } else {
             saved[id] = details.value;
@@ -48,8 +48,8 @@ export default function Assets() {
       localStorage.setItem('savedEdits', JSON.stringify(savedEdits));
     };
 
-    changeCurrentEdits({});
-    changeIsEditMode(v => !v);
+    setCurrentEdits({});
+    setIsEditMode(v => !v);
   }
 
   return (
