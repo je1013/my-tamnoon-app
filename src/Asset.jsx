@@ -2,14 +2,14 @@ import { useContext, useState } from "react";
 import { EditModeContext } from "./Assets";
 
 export default function Asset({data}) {
-  const {id, name, owner, isCrownJewel} = data;
+  const {id, name, owner, isCrownJewel, originalIsCrownJewel} = data;
   const {isEditMode, addChangeToQueue} = useContext(EditModeContext);
   const [crownJewelState, changeCrownJewelState] = useState(isCrownJewel);
 
   function modifyCrownJewelState(value) {
     const isTrue = (value === 'true');
     changeCrownJewelState(isTrue);
-    addChangeToQueue(id, isTrue, isCrownJewel);
+    addChangeToQueue(id, isTrue, isCrownJewel, originalIsCrownJewel);
   }
 
   return (

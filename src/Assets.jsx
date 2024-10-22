@@ -8,6 +8,7 @@ export default function Assets() {
   const [savedEdits, setSavedEdits] = useState(JSON.parse(localStorage.getItem("savedEdits") || '{}'));
   const [isEditMode, changeIsEditMode] = useState(false);
   const [currentEdits, changeCurrentEdits] = useState({});
+
   const assets = raw_assets.map(asset => {
     const hasCrownJewelChanges = savedEdits[asset._id] !== undefined;
     return {
@@ -15,15 +16,16 @@ export default function Assets() {
       name: asset.assetName || 'N/A',
       owner: asset.owner.name || asset.owner.owner.name || 'N/A',
       isCrownJewel: hasCrownJewelChanges ? savedEdits[asset._id] : asset.enriched.isCrownJewel,
+      originalIsCrownJewel: asset.enriched.isCrownJewel,
     }
   });
 
-  function addChangeToQueue(id, value, original) {
+  function addChangeToQueue(id, value, original, originalFromJSON) {
     changeCurrentEdits(curr => {
       if (value === original) {
         delete curr[id];
       } else {
-        curr[id] = value;
+        curr[id] = {value, originalFromJSON};
       }
       return curr;
     });
@@ -32,8 +34,12 @@ export default function Assets() {
   function toggleIsEditMode() {
     if (isEditMode) {
       setSavedEdits(saved => {
-        for (const [id, value] of Object.entries(currentEdits)) {
-          saved[id] = value;
+        for (const [id, details] of Object.entries(currentEdits)) {
+          if (details.originalFromJSON === details.value) {
+            delete saved[id];
+          } else {
+            saved[id] = details.value;
+          }
         }
 
         return saved;
